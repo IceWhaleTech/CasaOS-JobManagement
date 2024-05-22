@@ -39,12 +39,37 @@ paths:
         "500":
           $ref: "#/components/responses/response_internal_server_error"
 
+  /jobs/{id}:
+    get:
+      summary: Get job by ID
+      operationId: job_by_id
+      tags:
+        - Job methods
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":  
+          $ref: "#/components/responses/job_ok"
+        "404":
+          $ref: "#/components/responses/response_not_found"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
 components:
   securitySchemes:
     access_token:
       type: apiKey
       in: header
       name: Authorization
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/job_id"
+      x-go-name: ID
 
   responses:
     response_ok:
@@ -93,6 +118,17 @@ components:
           example:
             message: "Bad Request"
 
+    job_ok:
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/base_response"
+              - properties:
+                  data:
+                    $ref: "#/components/schemas/job"
+
     job_list_ok:
       description: OK
       content:
@@ -114,14 +150,20 @@ components:
           description: message returned by server side if there is any
           type: string
 
+    job_id:
+      readOnly: true
+      type: integer
+      format: int64
+      x-go-name: JobID
+
     job:
       required:
         - source_id
       properties:
         id:
-          readOnly: true
-          type: integer
-          format: int64
+          allOf:
+            - $ref: "#/components/schemas/job_id"
+          x-go-name: ID
           
         source_id:
           type: string
