@@ -19,3 +19,20 @@
 
 # Go workspace file
 go.work
+
+.vscode/
+.idea/
+
+bin/
+dist/
+target/
+codegen/
+__debug_bin
+
+# node_modules
+node_modules
+package-lock.json
+
+coverage.txt
+
+CasaOS-JobManager
