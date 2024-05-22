@@ -11,10 +11,17 @@ tags:
   - name: Job methods
     description: Methods for managing jobs
 
+  - name: Job
+    description: <SchemaDefinition schemaRef="#/components/schemas/job"/>
+
 x-tagGroups:
   - name: Methods
     tags:
       - Job methods
+
+  - name: Schemas
+    tags:
+      - Job
 
 security:
   - access_token: []
@@ -112,6 +119,7 @@ components:
         - source_id
       properties:
         id:
+          readOnly: true
           type: integer
           format: int64
           
