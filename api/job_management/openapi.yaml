@@ -1,0 +1,121 @@
+openapi: 3.0.3
+
+info:
+  title: Job Management API
+  version: v2
+
+servers:
+  - url: /v2/job_management
+
+tags:
+  - name: Job methods
+    description: Methods for managing jobs
+
+x-tagGroups:
+  - name: Methods
+    tags:
+      - Job methods
+
+security:
+  - access_token: []
+
+paths:
+  /jobs:
+    get:
+      summary: Get all jobs
+      operationId: job_list
+      tags:
+        - Job methods
+      responses:
+        "200":
+          $ref: "#/components/responses/job_list_ok"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
+components:
+  securitySchemes:
+    access_token:
+      type: apiKey
+      in: header
+      name: Authorization
+
+  responses:
+    response_ok:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/base_response"
+          example:
+            message: "OK"
+      x-go-name: ResponseOK
+
+    response_conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/base_response"
+          example:
+            message: "Conflict"
+
+    response_internal_server_error:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/base_response"
+          example:
+            message: "Internal Server Error"
+
+    response_not_found:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/base_response"
+          example:
+            message: "Not Found"
+
+    response_bad_request:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/base_response"
+          example:
+            message: "Bad Request"
+
+    job_list_ok:
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/base_response"
+              - properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/job"
+      x-go-name: JobListOK
+
+  schemas:
+    base_response: # Every response should inherit from BaseResponse
+      properties:
+        message:
+          description: message returned by server side if there is any
+          type: string
+
+    job:
+      required:
+        - source_id
+      properties:
+        id:
+          type: integer
+          format: int64
+          
+        source_id:
+          type: string
+          description: job source ID to identify where the job comes from
+          example: "local-storage"
