@@ -39,6 +39,25 @@ paths:
         "500":
           $ref: "#/components/responses/response_internal_server_error"
 
+    post:
+      summary: Create a job
+      operationId: create_job
+      tags:
+        - Job methods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/job"
+      responses:
+        "200":
+          $ref: "#/components/responses/job_ok"
+        "400":
+          $ref: "#/components/responses/response_bad_request"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
   /jobs/{id}:
     get:
       summary: Get job by ID
