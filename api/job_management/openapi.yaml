@@ -11,10 +11,17 @@ tags:
   - name: Job methods
     description: Methods for managing jobs
 
+  - name: Job
+    description: <SchemaDefinition schemaRef="#/components/schemas/job"/>
+
 x-tagGroups:
   - name: Methods
     tags:
       - Job methods
+
+  - name: Schemas
+    tags:
+      - Job
 
 security:
   - access_token: []
@@ -23,12 +30,47 @@ paths:
   /jobs:
     get:
       summary: Get all jobs
-      operationId: job_list
+      operationId: get_job_list
       tags:
         - Job methods
       responses:
         "200":
           $ref: "#/components/responses/job_list_ok"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
+    post:
+      summary: Create a job
+      operationId: create_job
+      tags:
+        - Job methods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/job"
+      responses:
+        "200":
+          $ref: "#/components/responses/job_ok"
+        "400":
+          $ref: "#/components/responses/response_bad_request"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
+  /jobs/{id}:
+    get:
+      summary: Get job by ID
+      operationId: get_job
+      tags:
+        - Job methods
+      parameters:
+        - $ref: "#/components/parameters/job_id"
+      responses:
+        "200":  
+          $ref: "#/components/responses/job_ok"
+        "404":
+          $ref: "#/components/responses/response_not_found"
         "500":
           $ref: "#/components/responses/response_internal_server_error"
 
@@ -38,6 +80,15 @@ components:
       type: apiKey
       in: header
       name: Authorization
+
+  parameters:
+    job_id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/job_id"
+      x-go-name: JobID
 
   responses:
     response_ok:
@@ -86,6 +137,17 @@ components:
           example:
             message: "Bad Request"
 
+    job_ok:
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/base_response"
+              - properties:
+                  data:
+                    $ref: "#/components/schemas/job"
+
     job_list_ok:
       description: OK
       content:
@@ -107,13 +169,20 @@ components:
           description: message returned by server side if there is any
           type: string
 
+    job_id:
+      readOnly: true
+      type: integer
+      format: int64
+      x-go-name: JobID
+
     job:
       required:
         - source_id
       properties:
         id:
-          type: integer
-          format: int64
+          allOf:
+            - $ref: "#/components/schemas/job_id"
+          x-go-name: ID
           
         source_id:
           type: string
