@@ -30,7 +30,7 @@ paths:
   /jobs:
     get:
       summary: Get all jobs
-      operationId: job_list
+      operationId: get_job_list
       tags:
         - Job methods
       responses:
@@ -61,11 +61,11 @@ paths:
   /jobs/{id}:
     get:
       summary: Get job by ID
-      operationId: job_by_id
+      operationId: get_job
       tags:
         - Job methods
       parameters:
-        - $ref: "#/components/parameters/id"
+        - $ref: "#/components/parameters/job_id"
       responses:
         "200":  
           $ref: "#/components/responses/job_ok"
@@ -82,13 +82,13 @@ components:
       name: Authorization
 
   parameters:
-    id:
+    job_id:
       name: id
       in: path
       required: true
       schema:
         $ref: "#/components/schemas/job_id"
-      x-go-name: ID
+      x-go-name: JobID
 
   responses:
     response_ok:

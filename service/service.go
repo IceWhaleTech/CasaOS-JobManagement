@@ -17,3 +17,16 @@ func Initialize(runtimePath string) {
 		runtimePath: runtimePath,
 	}
 }
+
+func (s *Services) Gateway() external.ManagementService {
+	if s.gateway == nil {
+		gateway, err := external.NewManagementService(s.runtimePath)
+		if err != nil && len(s.runtimePath) > 0 {
+			panic(err)
+		}
+
+		s.gateway = gateway
+	}
+
+	return s.gateway
+}
