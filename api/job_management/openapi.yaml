@@ -14,6 +14,12 @@ tags:
   - name: Job
     description: <SchemaDefinition schemaRef="#/components/schemas/job"/>
 
+  - name: Job Priority
+    description: <SchemaDefinition schemaRef="#/components/schemas/job_priority"/> 
+
+  - name: Job Status
+    description: <SchemaDefinition schemaRef="#/components/schemas/job_status"/>
+
 x-tagGroups:
   - name: Methods
     tags:
@@ -22,6 +28,8 @@ x-tagGroups:
   - name: Schemas
     tags:
       - Job
+      - Job Priority
+      - Job Status
 
 security:
   - access_token: []
@@ -67,8 +75,71 @@ paths:
       parameters:
         - $ref: "#/components/parameters/job_id"
       responses:
-        "200":  
+        "200":
           $ref: "#/components/responses/job_ok"
+        "404":
+          $ref: "#/components/responses/response_not_found"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
+  /jobs/{id}/priority:
+    put:
+      summary: Update job priority by ID
+      operationId: update_job_priority
+      tags:
+        - Job methods
+      parameters:
+        - $ref: "#/components/parameters/job_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/job_priority"
+      responses:
+        "200":
+          $ref: "#/components/responses/response_ok"
+        "400":
+          $ref: "#/components/responses/response_bad_request"
+        "404":
+          $ref: "#/components/responses/response_not_found"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
+  /jobs/{id}/status:
+    get:
+      summary: Get job status by ID
+      operationId: get_job_status
+      tags:
+        - Job methods
+      parameters:
+        - $ref: "#/components/parameters/job_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/response_ok"
+        "404":
+          $ref: "#/components/responses/response_not_found"
+        "500":
+          $ref: "#/components/responses/response_internal_server_error"
+
+    put:
+      summary: Update job status by ID
+      operationId: update_job_status
+      tags:
+        - Job methods
+      parameters:
+        - $ref: "#/components/parameters/job_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/job_status"
+      responses:
+        "200":
+          $ref: "#/components/responses/response_ok"
+        "400":
+          $ref: "#/components/responses/response_bad_request"
         "404":
           $ref: "#/components/responses/response_not_found"
         "500":
@@ -183,8 +254,50 @@ components:
           allOf:
             - $ref: "#/components/schemas/job_id"
           x-go-name: ID
-          
         source_id:
           type: string
           description: job source ID to identify where the job comes from
           example: "local-storage"
+        priority:
+          $ref: "#/components/schemas/job_priority"
+        status:
+          readOnly: true
+          allOf:
+            - $ref: "#/components/schemas/job_status"
+
+    job_priority:
+      type: string
+      description: |-
+        > NOTE:
+        > 
+        > Priority in job management is simply an expectation for the job owner, i.e. the services that runs each job.
+        > 
+        > Job owner might not respect this expectation, which means it can completely ignore this expectation.
+
+        - `high`: if any job is high priority, all medium and low priority jobs will be notified to be paused
+        - `medium`: if any job is medium priority, all low priority jobs will be notified to be paused
+        - `low`: runs only when no 
+      enum:
+        - high
+        - medium
+        - low
+      default: medium
+
+    job_status:
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: job status
+          enum:
+            - running
+            - completed
+            - failed
+        message:
+          type: string
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 62
