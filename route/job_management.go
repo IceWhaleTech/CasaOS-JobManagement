@@ -18,3 +18,15 @@ func (m *JobManagement) CreateJob(ctx echo.Context) error {
 func (m *JobManagement) GetJob(ctx echo.Context, _ codegen.JobID) error {
 	return ctx.JSON(http.StatusNotImplemented, struct{}{})
 }
+
+func (m *JobManagement) UpdateJobPriority(ctx echo.Context, _ codegen.JobID) error {
+	return ctx.JSON(http.StatusNotImplemented, struct{}{})
+}
+
+func (m *JobManagement) GetJobStatus(ctx echo.Context, _ codegen.JobID) error {
+	return ctx.JSON(http.StatusNotImplemented, struct{}{})
+}
+
+func (m *JobManagement) UpdateJobStatus(ctx echo.Context, _ codegen.JobID) error {
+	return ctx.JSON(http.StatusNotImplemented, struct{}{})
+}
