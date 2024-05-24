@@ -9,6 +9,9 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"time"
+
+	"github.com/vbauerster/mpb/v8"
 
 	"github.com/IceWhaleTech/CasaOS-JobManagement/cmd/demo_service/codegen/job_management"
 )
@@ -49,7 +52,7 @@ func main() {
 		var baseResponse job_management.BaseResponse
 		if err := json.Unmarshal(response.Body, &baseResponse); err != nil {
 			fmt.Printf("%s - %s\n", response.Status(), response.Body)
-			os.Exit(1)
+			// os.Exit(1)
 		}
 
 		var message string
@@ -58,6 +61,27 @@ func main() {
 		}
 
 		fmt.Printf("%s%s\n", response.Status(), message)
-		os.Exit(1)
+		// os.Exit(1)
 	}
+
+	bars := mpb.NewWithContext(ctx)
+
+	numBars := 3
+
+	barList := make([]*mpb.Bar, numBars)
+
+	for i := 0; i < 3; i++ {
+		barList[i] = bars.AddBar(100)
+	}
+
+	go func() {
+		for i := 0; i < numBars; i++ {
+			for progress := 0; progress < 100; progress++ {
+				barList[i].Increment()
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
+	}()
+
+	bars.Wait()
 }
