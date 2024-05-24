@@ -50,14 +50,15 @@ func main() {
 
 	if response.StatusCode() != http.StatusOK {
 		var baseResponse job_management.BaseResponse
-		if err := json.Unmarshal(response.Body, &baseResponse); err != nil {
-			fmt.Printf("%s - %s\n", response.Status(), response.Body)
-			// os.Exit(1)
-		}
-
 		var message string
-		if baseResponse.Message != nil {
-			message = fmt.Sprintf(" - %s", *baseResponse.Message)
+		if err := json.Unmarshal(response.Body, &baseResponse); err != nil {
+			if len(response.Body) > 0 {
+				message = fmt.Sprintf(" - %s", string(response.Body))
+			}
+		} else {
+			if baseResponse.Message != nil {
+				message = fmt.Sprintf(" - %s", *baseResponse.Message)
+			}
 		}
 
 		fmt.Printf("%s%s\n", response.Status(), message)
@@ -66,22 +67,21 @@ func main() {
 
 	bars := mpb.NewWithContext(ctx)
 
-	numBars := 3
+	jobList := make([]*Job, 0)
 
-	barList := make([]*mpb.Bar, numBars)
+	totalUnits := []int64{1000, 1000, 1000}
+	unitTime := []time.Duration{100 * time.Millisecond, 100 * time.Millisecond, 100 * time.Millisecond}
 
-	for i := 0; i < 3; i++ {
-		barList[i] = bars.AddBar(100)
+	for i := 0; i < len(totalUnits); i++ {
+		job := NewJob(totalUnits[i], unitTime[i])
+		bar := bars.AddBar(job.Total())
+		job.OnUnitCompletion(bar.Increment)
+		jobList = append(jobList, job)
 	}
 
-	go func() {
-		for i := 0; i < numBars; i++ {
-			for progress := 0; progress < 100; progress++ {
-				barList[i].Increment()
-				time.Sleep(10 * time.Millisecond)
-			}
-		}
-	}()
+	for _, job := range jobList {
+		job.StartAsync(ctx)
+	}
 
 	bars.Wait()
 }
