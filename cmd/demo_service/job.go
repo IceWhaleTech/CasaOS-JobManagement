@@ -5,44 +5,39 @@ import (
 	"time"
 )
 
-type Job struct {
-	cancel context.CancelFunc
-
-	postHooks []func()
-
-	totalUnits int64
-	unitTime   time.Duration
+type Task struct {
+	cancel           context.CancelFunc
+	name             string
+	onUnitCompletion []func()
+	totalUnits       int64
+	unitTime         time.Duration
 }
 
-func NewJob(totalUnits int64, unitTime time.Duration) *Job {
-	return &Job{
-		totalUnits: totalUnits,
-		unitTime:   unitTime,
-		cancel:     nil,
+func NewTask(totalUnits int64, unitTime time.Duration) *Task {
+	return &Task{
+		cancel:           nil,
+		name:             "unknown",
+		onUnitCompletion: make([]func(), 0),
+		totalUnits:       totalUnits,
+		unitTime:         unitTime,
 	}
 }
 
-func (j *Job) Total() int64 {
-	return j.totalUnits
-}
-
-func (j *Job) OnUnitCompletion(hook func()) {
-	j.postHooks = append(j.postHooks, hook)
-}
-
-func (j *Job) StartAsync(ctx context.Context) {
+func (t *Task) StartAsync(ctx context.Context, onStart func(_t *Task)) {
 	_ctx, cancel := context.WithCancel(ctx)
 
-	j.cancel = cancel
+	t.cancel = cancel
 
 	go func() {
-		for i := int64(0); i < j.totalUnits; i++ {
+		onStart(t)
+
+		for i := int64(0); i < t.totalUnits; i++ {
 			select {
 			case <-_ctx.Done():
 				return
 			default:
-				time.Sleep(j.unitTime)
-				for _, hook := range j.postHooks {
+				time.Sleep(t.unitTime)
+				for _, hook := range t.onUnitCompletion {
 					hook()
 				}
 			}
@@ -50,8 +45,10 @@ func (j *Job) StartAsync(ctx context.Context) {
 	}()
 }
 
-func (j *Job) Stop() {
-	if j.cancel != nil {
-		j.cancel()
+func (t *Task) Stop() {
+	if t.cancel == nil {
+		return
 	}
+
+	t.cancel()
 }
