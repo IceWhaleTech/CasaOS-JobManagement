@@ -12,7 +12,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/samber/lo"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
 
@@ -64,8 +63,8 @@ func main() {
 			bar.Increment()
 
 			jobStatus := job_management.JobStatus{
-				Status:   job_management.Running,
-				Progress: lo.ToPtr(int((int64(i) / totalUnits[i]) * 100)),
+				Status: job_management.Running,
+				// Progress: lo.ToPtr(int((int64(i) / totalUnits[i]) * 100)),
 			}
 
 			response, _err := jobManagement.UpdateJobStatusWithResponse(ctx, task.jobID, jobStatus)
