@@ -9,6 +9,8 @@ var MyService *Services
 type Services struct {
 	gateway external.ManagementService
 
+	jobManagement *JobManagement
+
 	runtimePath string
 }
 
@@ -29,4 +31,12 @@ func (s *Services) Gateway() external.ManagementService {
 	}
 
 	return s.gateway
+}
+
+func (s *Services) JobManagement() *JobManagement {
+	if s.jobManagement == nil {
+		s.jobManagement = NewJobManagement()
+	}
+
+	return s.jobManagement
 }
