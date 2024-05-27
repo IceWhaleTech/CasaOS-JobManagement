@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"time"
+
+	"github.com/IceWhaleTech/CasaOS-JobManagement/codegen"
 )
 
 type Task struct {
 	cancel           context.CancelFunc
-	name             string
 	onUnitCompletion []func()
+	jobID            codegen.JobID
 	totalUnits       int64
 	unitTime         time.Duration
 }
@@ -16,7 +18,7 @@ type Task struct {
 func NewTask(totalUnits int64, unitTime time.Duration) *Task {
 	return &Task{
 		cancel:           nil,
-		name:             "unknown",
+		jobID:            -1,
 		onUnitCompletion: make([]func(), 0),
 		totalUnits:       totalUnits,
 		unitTime:         unitTime,

@@ -1,28 +1,37 @@
 package service
 
 import (
+	"sync"
+
 	"github.com/IceWhaleTech/CasaOS-JobManagement/codegen"
 	"github.com/samber/lo"
 )
 
 type JobManagement struct {
-	jobMap    map[codegen.JobID]*codegen.Job // TODO: use a persistent storage like SQLite
+	jobMap    *sync.Map // TODO: use a persistent storage like SQLite
 	nextJobID codegen.JobID
 }
 
 func NewJobManagement() *JobManagement {
 	return &JobManagement{
-		jobMap: make(map[codegen.JobID]*codegen.Job, 0),
+		jobMap: &sync.Map{},
 	}
 }
 
 func (m *JobManagement) GetJobMap() map[codegen.JobID]*codegen.Job {
-	return m.jobMap
+	jobMap := map[codegen.JobID]*codegen.Job{}
+
+	m.jobMap.Range(func(key, value any) bool {
+		jobMap[key.(codegen.JobID)] = value.(*codegen.Job)
+		return true
+	})
+
+	return jobMap
 }
 
 func (m *JobManagement) GetJob(jobID codegen.JobID) *codegen.Job {
-	if job, ok := m.jobMap[jobID]; ok {
-		return job
+	if job, ok := m.jobMap.Load(jobID); ok {
+		return job.(*codegen.Job)
 	}
 
 	return nil
@@ -49,19 +58,21 @@ func (m *JobManagement) CreateJob(job *codegen.Job) {
 		job.Status.Progress = lo.ToPtr(0)
 	}
 
-	m.jobMap[*job.ID] = job
+	m.jobMap.Store(*job.ID, job)
 
 	m.nextJobID++
 }
 
 func (m *JobManagement) UpdateJobStatus(jobID codegen.JobID, jobStatus *codegen.JobStatus) {
-	if job, ok := m.jobMap[jobID]; ok {
-		job.Status = jobStatus
+	if job, ok := m.jobMap.Load(jobID); ok {
+		job.(*codegen.Job).Status = jobStatus
+		m.jobMap.Store(jobID, job)
 	}
 }
 
 func (m *JobManagement) UpdateJobPriority(jobID codegen.JobID, jobPriority *codegen.JobPriority) {
-	if job, ok := m.jobMap[jobID]; ok {
-		job.Priority = jobPriority
+	if job, ok := m.jobMap.Load(jobID); ok {
+		job.(*codegen.Job).Priority = jobPriority
+		m.jobMap.Store(jobID, job)
 	}
 }

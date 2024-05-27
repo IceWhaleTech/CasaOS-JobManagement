@@ -12,6 +12,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/samber/lo"
 	"github.com/vbauerster/mpb/v8"
 	"github.com/vbauerster/mpb/v8/decor"
 
@@ -46,16 +47,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	response, err := jobManagement.GetJobListWithResponse(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	if response.StatusCode() != http.StatusOK {
-		printResponseMessage(response.HTTPResponse)
-		// os.Exit(1)
-	}
-
 	bars := mpb.NewWithContext(ctx)
 
 	taskList := make([]*Task, 0)
@@ -66,9 +57,24 @@ func main() {
 	for i := 0; i < len(totalUnits); i++ {
 		task := NewTask(totalUnits[i], unitTime[i])
 		bar := bars.AddBar(task.totalUnits, mpb.PrependDecorators(
-			decor.Any(func(decor.Statistics) string { return task.name }),
+			decor.Any(func(decor.Statistics) string { return fmt.Sprintf("Job-%d", task.jobID) }),
 		))
-		task.onUnitCompletion = append(task.onUnitCompletion, bar.Increment)
+		task.onUnitCompletion = append(task.onUnitCompletion, func() {
+			// upon completion of a unit, do following...
+			bar.Increment()
+
+			jobStatus := job_management.JobStatus{
+				Status:   job_management.Running,
+				Progress: lo.ToPtr(int((int64(i) / totalUnits[i]) * 100)),
+			}
+
+			response, _err := jobManagement.UpdateJobStatusWithResponse(ctx, task.jobID, jobStatus)
+			if _err != nil {
+				fmt.Println(_err.Error())
+			} else if response.StatusCode() != http.StatusOK {
+				printResponseMessage(response.HTTPResponse)
+			}
+		})
 		taskList = append(taskList, task)
 	}
 
@@ -78,9 +84,9 @@ func main() {
 				SourceId: sourceID,
 			}
 
-			response, err := jobManagement.CreateJobWithResponse(ctx, job)
-			if err != nil {
-				fmt.Println(err.Error())
+			response, _err := jobManagement.CreateJobWithResponse(ctx, job)
+			if _err != nil {
+				fmt.Println(_err.Error())
 				return
 			}
 
@@ -90,12 +96,30 @@ func main() {
 			}
 
 			if response.JSON200 != nil && response.JSON200.Data != nil && response.JSON200.Data.ID != nil {
-				t.name = fmt.Sprintf("Job-%d", *response.JSON200.Data.ID)
+				t.jobID = *response.JSON200.Data.ID
 			}
 		})
 	}
 
 	bars.Wait()
+
+	response, err := jobManagement.GetJobListWithResponse(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		printResponseMessage(response.HTTPResponse)
+		// os.Exit(1)
+	}
+
+	if response.JSON200 == nil || response.JSON200.Data == nil {
+		return
+	}
+
+	for _, job := range *response.JSON200.Data {
+		fmt.Printf("Job-%d: %s (%s)\n", *job.ID, job.Status.Status, *job.Priority)
+	}
 }
 
 func printResponseMessage(response *http.Response) {
