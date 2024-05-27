@@ -98,7 +98,7 @@ paths:
               $ref: "#/components/schemas/job_priority"
       responses:
         "200":
-          $ref: "#/components/responses/response_ok"
+          $ref: "#/components/responses/job_priority_ok"
         "400":
           $ref: "#/components/responses/response_bad_request"
         "404":
@@ -116,7 +116,7 @@ paths:
         - $ref: "#/components/parameters/job_id"
       responses:
         "200":
-          $ref: "#/components/responses/response_ok"
+          $ref: "#/components/responses/job_status_ok"
         "404":
           $ref: "#/components/responses/response_not_found"
         "500":
@@ -137,7 +137,7 @@ paths:
               $ref: "#/components/schemas/job_status"
       responses:
         "200":
-          $ref: "#/components/responses/response_ok"
+          $ref: "#/components/responses/job_status_ok"
         "400":
           $ref: "#/components/responses/response_bad_request"
         "404":
@@ -218,6 +218,7 @@ components:
               - properties:
                   data:
                     $ref: "#/components/schemas/job"
+      x-go-name: JobOK
 
     job_list_ok:
       description: OK
@@ -232,6 +233,30 @@ components:
                     items:
                       $ref: "#/components/schemas/job"
       x-go-name: JobListOK
+
+    job_status_ok:
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/base_response"
+              - properties:
+                  data:
+                    $ref: "#/components/schemas/job_status"
+      x-go-name: JobStatusOK
+
+    job_priority_ok:
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/base_response"
+              - properties:
+                  data:
+                    $ref: "#/components/schemas/job_priority"
+      x-go-name: JobPriorityOK
 
   schemas:
     base_response: # Every response should inherit from BaseResponse

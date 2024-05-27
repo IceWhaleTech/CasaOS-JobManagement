@@ -20,6 +20,14 @@ func (m *JobManagement) GetJobMap() map[codegen.JobID]*codegen.Job {
 	return m.jobMap
 }
 
+func (m *JobManagement) GetJob(jobID codegen.JobID) *codegen.Job {
+	if job, ok := m.jobMap[jobID]; ok {
+		return job
+	}
+
+	return nil
+}
+
 func (m *JobManagement) CreateJob(job *codegen.Job) {
 	if job == nil {
 		return
@@ -44,4 +52,16 @@ func (m *JobManagement) CreateJob(job *codegen.Job) {
 	m.jobMap[*job.ID] = job
 
 	m.nextJobID++
+}
+
+func (m *JobManagement) UpdateJobStatus(jobID codegen.JobID, jobStatus *codegen.JobStatus) {
+	if job, ok := m.jobMap[jobID]; ok {
+		job.Status = jobStatus
+	}
+}
+
+func (m *JobManagement) UpdateJobPriority(jobID codegen.JobID, jobPriority *codegen.JobPriority) {
+	if job, ok := m.jobMap[jobID]; ok {
+		job.Priority = jobPriority
+	}
 }
