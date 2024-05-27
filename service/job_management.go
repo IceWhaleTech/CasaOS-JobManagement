@@ -42,4 +42,6 @@ func (m *JobManagement) CreateJob(job *codegen.Job) {
 	}
 
 	m.jobMap[*job.ID] = job
+
+	m.nextJobID++
 }

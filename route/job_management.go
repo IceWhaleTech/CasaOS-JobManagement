@@ -26,7 +26,9 @@ func (m *JobManagement) CreateJob(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, codegen.ResponseBadRequest{Message: &message})
 	}
 
-	return ctx.JSON(http.StatusNotImplemented, struct{}{})
+	service.MyService.JobManagement().CreateJob(&job)
+
+	return ctx.JSON(http.StatusOK, codegen.JobOk{Data: &job})
 }
 
 func (m *JobManagement) GetJob(ctx echo.Context, _ codegen.JobID) error {
