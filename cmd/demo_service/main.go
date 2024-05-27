@@ -66,7 +66,7 @@ func main() {
 	for i := 0; i < len(totalUnits); i++ {
 		task := NewTask(totalUnits[i], unitTime[i])
 		bar := bars.AddBar(task.totalUnits, mpb.PrependDecorators(
-			decor.Name(task.name),
+			decor.Any(func(decor.Statistics) string { return task.name }),
 		))
 		task.onUnitCompletion = append(task.onUnitCompletion, bar.Increment)
 		taskList = append(taskList, task)
